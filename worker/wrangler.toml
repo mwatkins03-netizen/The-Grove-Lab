@@ -1,0 +1,17 @@
+name = "grove-lab-status"
+main = "worker.js"
+compatibility_date = "2025-01-01"
+
+# The status value lives here. Create it once with:
+#   npx wrangler kv namespace create GROVE
+# then paste the id it prints in place of the placeholder below.
+[[kv_namespaces]]
+binding = "GROVE"
+id = "PASTE_THE_KV_NAMESPACE_ID_HERE"
+
+[vars]
+# Optional: lock to your site, e.g. "https://mwatkins03-netizen.github.io". "*" allows any origin to READ the status.
+ALLOWED_ORIGINS = "*"
+
+# Secret (never in this file):
+#   npx wrangler secret put ADMIN_PASSWORD

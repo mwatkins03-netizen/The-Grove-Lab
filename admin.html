@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en" data-page="admin">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Admin | The Grove Lab</title>
+<meta name="description" content="Open or close Grove Lab submissions.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@125,700;125,800;125,900&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/grove.css?v=20261009h">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' fill='%23CE1126'/%3E%3Ctext x='20' y='27' font-family='Arial Black,Arial' font-weight='900' font-size='17' fill='white' text-anchor='middle'%3EGL%3C/text%3E%3C/svg%3E">
+<script src="js/status-config.js?v=20261009h"></script>
+<script src="js/status.js?v=20261009h"></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="site-head">
+  <div class="wrap">
+    <a class="brand" href="index.html" aria-label="The Grove Lab home">
+      <span class="mark" aria-hidden="true">GL</span>
+      <span><b>The Grove Lab</b><small>An agentic AI tinkering lab</small></span>
+    </a>
+    <nav class="site-nav" aria-label="Main"><a href="index.html">Home</a><a href="guidelines.html">Guidelines</a><a href="gallery.html">Gallery</a><a href="form.html" class="cta">Build form</a></nav>
+  </div>
+</header>
+
+<main id="main">
+  <section class="hero short">
+    <div class="wrap">
+      <div class="hero-sign" data-subs-sign="big"></div>
+      <p class="eyebrow">Admin</p>
+      <h1>Submission status</h1>
+      <p class="lede-serif">Open or close the build form for everyone. When it’s closed, the form sends visitors to the temporarily closed page.</p>
+    </div>
+  </section>
+  <section class="section" style="padding-top:44px">
+    <div class="wrap">
+      <div class="admin-box" id="adminLive" hidden>
+        <form id="adminForm" autocomplete="off">
+          <div class="field" style="margin-top:0"><label for="adminPw">Admin password</label>
+            <input type="password" id="adminPw" autocomplete="current-password" required></div>
+          <fieldset class="field"><legend>Set submissions to</legend>
+            <div class="opts cols">
+              <label class="opt"><input type="radio" name="want" value="open"><span>Open<small>The build form works normally.</small></span></label>
+              <label class="opt"><input type="radio" name="want" value="closed"><span>Closed<small>The form sends visitors to the temporarily closed page.</small></span></label>
+            </div></fieldset>
+          <div class="dl-row"><button type="submit" class="btn">Save status</button></div>
+        </form>
+        <p class="admin-msg" id="adminMsg" role="status" aria-live="polite"></p>
+        <p class="help" style="margin:14px 0 0;font-size:14px;color:var(--muted)">The password is checked by the status Worker, not by this page. Changes reach visitors within about a minute.</p>
+      </div>
+      <div class="notice warn" id="adminSetup" hidden><span class="ico" aria-hidden="true">!</span><div>
+        <h3>The live switch isn’t set up yet</h3>
+        <p>To use this page, deploy the small status Worker in the <code>worker/</code> folder and paste its address into <code>js/status-config.js</code>. The README walks through it in four commands.</p>
+        <p>Until then, you can still open or close submissions by changing <code>open: true</code> to <code>open: false</code> in <code>js/status-config.js</code> and re-uploading that file.</p></div></div>
+    </div>
+  </section>
+</main>
+<footer class="site-foot">
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <h2>The Grove Lab</h2>
+        <p>A tinkering lab by Marc Watkins. Send build ideas to <a href="mailto:mwatkins@olemiss.edu">mwatkins@olemiss.edu</a>.</p>
+        <p>Most gallery builds come from <a href="https://6a90f8fa674c4e3e5b9c8ab0--contextisallyouneed.netlify.app/" target="_blank" rel="noopener">Context Is All You Need</a>. Quoted language is Marc's, from <a href="https://marcwatkins.substack.com/" target="_blank" rel="noopener">Rhetorica</a>.</p>
+      </div>
+      <div>
+        <h2>AI disclosure</h2>
+        <p>This site was coded with Anthropic's Claude under Marc Watkins's direction. Marc supplied the vision and the language about prototypes, timelines, sharing, and the reflection. The build form offers optional AI assistance: only if you choose it, Jev, a TypeSafe AI model, reads your idea and suggests a pathway, and its suggestions are labeled as AI-generated. Nothing else on the site uses AI.</p>
+      </div>
+      <div>
+        <h2>Accessibility</h2>
+        <p>This site aims for WCAG 2.1 AA: keyboard navigation, visible focus, labeled fields, sufficient contrast, and reduced motion when your system asks for it. If something doesn't work for you, email <a href="mailto:mwatkins@olemiss.edu">mwatkins@olemiss.edu</a>.</p>
+      </div>
+    </div>
+    <div class="foot-base"><span>Builds from the lab are prototypes only.</span><span><a href="index.html">Home</a> · <a href="guidelines.html">Guidelines</a> · <a href="gallery.html">Gallery</a> · <a href="form.html">Build form</a> · <a href="admin.html">Admin</a></span></div>
+  </div>
+</footer>
+<script>
+(() => {
+  const S = window.GROVE_STATUS, $ = s => document.querySelector(s);
+  if (!S.endpoint) { $("#adminSetup").hidden = false; return; }
+  $("#adminLive").hidden = false;
+  const pick = () => document.querySelector(`[name=want][value=${S.get().open ? "open" : "closed"}]`).checked = true;
+  pick(); S.refresh().then(pick);
+  $("#adminForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    const msg = $("#adminMsg"), pw = $("#adminPw"), want = (document.querySelector("[name=want]:checked") || {}).value;
+    if (!want) { msg.className = "admin-msg err"; msg.textContent = "Choose Open or Closed."; return; }
+    msg.className = "admin-msg"; msg.textContent = "Saving…";
+    try {
+      const r = await fetch(S.endpoint + "/status", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ password: pw.value, open: want === "open" }) });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) { msg.className = "admin-msg err"; msg.textContent = (j.error || "Something went wrong.") + (j.remaining != null ? ` ${j.remaining} tries left.` : ""); return; }
+      S.set(j); pw.value = "";
+      msg.className = "admin-msg ok"; msg.textContent = j.open ? "Submissions are open." : "Submissions are closed. The form now sends visitors to the closed page.";
+    } catch { msg.className = "admin-msg err"; msg.textContent = "Couldn't reach the status Worker. Check the endpoint in js/status-config.js."; }
+  });
+})();
+</script>
+</body>
+</html>

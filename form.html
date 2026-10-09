@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en" data-page="form">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Build Form | The Grove Lab</title>
+<meta name="description" content="Describe your build idea, optionally get AI suggestions from Jev, fill out the sections for that pathway, then download your response and email it to the Academic Innovations Group.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@125,700;125,800;125,900&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/grove.css?v=20261009h">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' fill='%23CE1126'/%3E%3Ctext x='20' y='27' font-family='Arial Black,Arial' font-weight='900' font-size='17' fill='white' text-anchor='middle'%3EGL%3C/text%3E%3C/svg%3E">
+<script src="js/status-config.js?v=20261009h"></script>
+<script src="js/status.js?v=20261009h"></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the form</a>
+<header class="site-head">
+  <div class="wrap">
+    <a class="brand" href="index.html" aria-label="The Grove Lab home">
+      <span class="mark" aria-hidden="true">GL</span>
+      <span><b>The Grove Lab</b><small>An agentic AI tinkering lab</small></span>
+    </a>
+    <nav class="site-nav" aria-label="Main"><a href="index.html">Home</a><a href="guidelines.html">Guidelines</a><a href="gallery.html">Gallery</a><a href="form.html" class="cta" aria-current="page">Build form</a></nav>
+  </div>
+</header>
+
+<section class="hero short">
+  <div class="wrap">
+    <p class="eyebrow">Submit an idea</p>
+    <p class="hero-pill" data-subs-sign="compact"></p>
+    <h1>Build form</h1>
+    <p class="lede-serif">Open one section at a time. Your answers save in this browser as you type. When you're done, download your response and email it to <a href="mailto:mwatkins@olemiss.edu" style="color:#fff">mwatkins@olemiss.edu</a>.</p>
+  </div>
+</section>
+<div class="wrap f-layout">
+  <aside class="f-nav" aria-label="Form sections">
+    <h2>Sections</h2>
+    <div class="progress" role="progressbar" aria-label="Sections started" aria-valuemin="0" aria-valuemax="100" id="prog"><i></i></div>
+    <button type="button" class="btn small ghost nav-toggle" id="navToggle" aria-expanded="false" aria-controls="navList">Show all sections</button>
+    <ol id="navList"></ol>
+    <p class="saved" id="saved" aria-live="off">Saves in this browser as you type. Nothing is sent until you email it.</p>
+    <button type="button" class="btn small ghost clear-btn" data-clear>Clear form</button>
+  </aside>
+  <main id="main" class="f-main" tabindex="-1"></main>
+</div>
+
+<dialog id="connDlg" aria-labelledby="connH">
+  <form method="dialog" class="in">
+    <h2 id="connH">Jev connection (AI assistance)</h2>
+    <p>The idea box sends your text to Jev through a small proxy that holds the API key. You can point it at a different proxy here.</p>
+    <div class="field"><label for="connUrl">Proxy address</label><input type="text" id="connUrl" spellcheck="false"></div>
+    <div class="dl-row"><button class="btn" value="save" id="connSave">Save</button><button class="btn ghost" value="reset" id="connReset">Use the default</button><button class="btn ghost" value="cancel">Cancel</button></div>
+  </form>
+</dialog>
+<dialog id="clearDlg" aria-labelledby="clearH" aria-describedby="clearP">
+  <form method="dialog" class="in">
+    <h2 id="clearH">Clear the form?</h2>
+    <p id="clearP">This erases every answer saved in this browser, including your idea, your pathway choices, and any AI suggestions. It can't be undone. Anything you've already downloaded or emailed is not affected.</p>
+    <label class="opt"><input type="checkbox" id="clearFlags" checked><span>Also clear the gallery builds I marked "Close to my idea"</span></label>
+    <div class="dl-row">
+      <button type="button" class="btn ghost" id="clearDownload">Download a copy first</button>
+      <button class="btn red" value="clear">Clear form</button>
+      <button class="btn ghost" value="cancel" autofocus>Cancel</button>
+    </div>
+  </form>
+</dialog>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<footer class="site-foot">
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <h2>The Grove Lab</h2>
+        <p>A tinkering lab by Marc Watkins. Send build ideas to <a href="mailto:mwatkins@olemiss.edu">mwatkins@olemiss.edu</a>.</p>
+        <p>Most gallery builds come from <a href="https://6a90f8fa674c4e3e5b9c8ab0--contextisallyouneed.netlify.app/" target="_blank" rel="noopener">Context Is All You Need</a>. Quoted language is Marc's, from <a href="https://marcwatkins.substack.com/" target="_blank" rel="noopener">Rhetorica</a>.</p>
+      </div>
+      <div>
+        <h2>AI disclosure</h2>
+        <p>This site was coded with Anthropic's Claude under Marc Watkins's direction. Marc supplied the vision and the language about prototypes, timelines, sharing, and the reflection. The build form offers optional AI assistance: only if you choose it, Jev, a TypeSafe AI model, reads your idea and suggests a pathway, and its suggestions are labeled as AI-generated. Nothing else on the site uses AI.</p>
+      </div>
+      <div>
+        <h2>Accessibility</h2>
+        <p>This site aims for WCAG 2.1 AA: keyboard navigation, visible focus, labeled fields, sufficient contrast, and reduced motion when your system asks for it. If something doesn't work for you, email <a href="mailto:mwatkins@olemiss.edu">mwatkins@olemiss.edu</a>.</p>
+      </div>
+    </div>
+    <div class="foot-base"><span>Builds from the lab are prototypes only.</span><span><a href="index.html">Home</a> · <a href="guidelines.html">Guidelines</a> · <a href="gallery.html">Gallery</a> · <a href="form.html">Build form</a> · <a href="admin.html">Admin</a></span></div>
+  </div>
+</footer>
+
+<script src="js/data.js?v=20261009h"></script>
+<script src="js/schema.js?v=20261009h"></script>
+<script src="js/form.js?v=20261009h"></script>
+</body>
+</html>
