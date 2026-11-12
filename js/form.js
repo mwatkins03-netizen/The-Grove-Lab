@@ -32,7 +32,7 @@ const toast = m => { const t = $("#toast"); t.textContent = m; t.classList.add("
 const pathOn = id => S.primary === id || S.also.includes(id);
 const secVisible = sec => sec.path ? pathOn(sec.path) : (sec.when ? sec.when(S) : true);
 const fieldVisible = f => !f.when || f.when(S);
-const realFields = sec => (sec.fields || []).filter(f => f.id);
+const realFields = sec => (sec.fields || []).filter(f => f.id && f.type !== "note");
 function ordered() {
   const all = F.SECTIONS.slice(), i = all.findIndex(s => s.path);
   const paths = all.filter(s => s.path).sort((a, b) => (b.path === S.primary) - (a.path === S.primary));
@@ -86,6 +86,8 @@ function renderField(f, sec) {
         <fieldset class="field"><legend>${esc(f.question)}</legend>
         <div class="opts cols">${opts.map(o => optRow(f, o, "radio")).join("")}</div></fieldset></div>`;
     }
+    case "note":
+      return `<div class="exemplar" ${wrapAttrs}><h3>Preview it</h3><p style="margin:0 0 12px">${esc(f.text)}</p><a class="btn small ghost" href="${esc(f.link)}">${esc(f.linkText)}</a></div>`;
     case "lang": {
       const target = realFields(sec).find(x => x.type === "textarea");
       return `<div class="exemplar"><h3>Sample language</h3>
@@ -622,7 +624,7 @@ function exportModel(blank) {
     }
     (sec.fields || []).forEach(f => {
       if (!f.id || (!blank && !fieldVisible(f))) return;
-      if (f.id === "look_why") return;
+      if (f.id === "look_why" || f.type === "note") return;
       const q = f.type === "compare" ? `${f.question} (${f.pair.join(" or ")})` : f.label;
       const opts = blank && (f.type === "radio" || f.type === "checks") ? f.options.map(o => typeof o === "string" ? o : o.v)
         : blank && f.type === "compare" ? [`Closer to ${f.pair[0]}`, `Closer to ${f.pair[1]}`, "Somewhere in between", "Neither"] : null;

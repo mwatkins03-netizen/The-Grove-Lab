@@ -11,14 +11,16 @@ Static site. No build step, no accounts, no analytics. Answers save only in the 
 | `index.html` | The vision, how it works, the six pathways, and three things to know |
 | `guidelines.html` | Accordions: prototypes, timeline, complexity, data security, FERPA, APIs, accessibility and Title II, sharing, reflection, how Jev reads your idea, how to download and send |
 | `gallery.html` | 35 builds (28 from Context Is All You Need plus 7 newer ones), grouped by pathway, with search, filters, and "Close to my idea" flags that carry into the form |
+| `prototype.html` | Prototype preview: draws the visitor's idea as a one-sheet dimensional drawing (plan view, exploded layers, phone view, control/corner/radius/type/motion details, variable tables), then shows the same geometry as a wireframe, a styled mock, and a clickable prototype. Six choices (layout pattern, spacing, corners, type, colors, motion) save into the form's "Look and feel" section and every download. "Watch it draw itself" plays a ~10 s film; the sheet downloads as SVG or prints. Method after Enes Ozturk's dimensional-drawing skill (MIT). No AI involved; plain code from the choices. |
 | `form.html` | The build form, one accordion per section with "next section" buttons: Jev intake and rubric, pathway picker, pathway sections with side-by-side gallery comparisons and sample language, shared sections, optional reflection, download and send |
 
 ## Editing
 
 - **Contact email, pathways, gallery builds, quotes:** `js/data.js`
 - **Form questions, exemplars, sample language, Jev rubric:** `js/schema.js`
+- **Prototype preview (layouts, variables, drawing kit, mock, film):** `js/prototype.js`; styles at the end of `css/grove.css` under "prototype preview"
 - **Colors and type:** tokens at the top of `css/grove.css`. Styled after olemiss.edu: navy #14213D, red #CE1126, Archivo Expanded (open stand-in for UM's licensed Termina) for headings, IBM Plex Sans and Serif for text. No italics.
-- **Header and footer:** repeated in each HTML page; change all four together
+- **Header and footer:** repeated in each HTML page; change all of them together
 - **Screenshots:** `shots/` (1280×720 captures saved as 960px JPEGs)
 
 To add a build, add a `B(...)` line in `js/data.js` and drop its screenshot in `shots/`. To add a question, add a field object to a section in `js/schema.js`; it appears in the form, the progress nav, and every download automatically.
@@ -67,4 +69,10 @@ npx wrangler deploy
 ```
 Type the password when prompted. Copy the `https://grove-lab-status.<you>.workers.dev` address it prints into `endpoint` in `js/status-config.js` and re-upload that file. After that, use `admin.html` (linked as "Admin" in every footer): enter the password, choose Open or Closed, Save. Visitors see the change within about a minute. Five wrong passwords lock out for 15 minutes.
 
-**2. Without the Worker.** Leave `endpoint` empty and change `open: true` to `open: false` in `js/status-config.js`, then re-upload it.
+**2. Without the Worker.** Leave `endpoint` empty and change `open: true` to `open: false` in `js/status-config.js`, then re-upload it. Pages re-read that file fresh on each visit, so the change shows up as soon as GitHub Pages publishes it.
+
+**The Student Studio fork** (`grove-lab-students/`) uses this same Worker with its own switch (`?site=students`), so one deployment covers both sites and closing one doesn't close the other.
+
+## Look
+
+The site uses the Understory look (pine and persimmon on paper; Literata, Schibsted Grotesk and Spline Sans Mono; no italics). It is a skin: `css/grove.css` keeps the old variable names with new values, plus an "UNDERSTORY SKIN" block at the end. The home page hero and the row of trees above the footer are painted in the browser by `js/understory-paint.js`; the hero's Spring / Summer / Fall / Winter buttons choose the season, and with no choice the calendar decides. The header mark is `img/grove-lab-mark.svg`. The drawings are stylised, not traced from photographs.

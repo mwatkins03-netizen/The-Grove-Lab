@@ -7,34 +7,38 @@
 <meta name="description" content="Faculty submit build ideas and Marc Watkins rapidly prototypes them with agentic AI. Browse the gallery, read the guidelines, and fill out the build form.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@125,700;125,800;125,900&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/grove.css?v=20261009h">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' fill='%23CE1126'/%3E%3Ctext x='20' y='27' font-family='Arial Black,Arial' font-weight='900' font-size='17' fill='white' text-anchor='middle'%3EGL%3C/text%3E%3C/svg%3E">
-<script src="js/status-config.js?v=20261009h"></script>
-<script src="js/status.js?v=20261009h"></script>
+<link href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,300..700&family=Schibsted+Grotesk:wght@400..900&family=Spline+Sans+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/grove.css?v=20261112d">
+<link rel="icon" href="img/grove-lab-mark.svg" type="image/svg+xml">
+<script src="js/status-config.js?v=20261112d"></script>
+<script src="js/status.js?v=20261112d"></script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
 <header class="site-head">
   <div class="wrap">
     <a class="brand" href="index.html" aria-label="The Grove Lab home">
-      <span class="mark" aria-hidden="true">GL</span>
+      <img class="mark" src="img/grove-lab-mark.svg" alt="" width="42" height="42">
       <span><b>The Grove Lab</b><small>An agentic AI tinkering lab</small></span>
     </a>
-    <nav class="site-nav" aria-label="Main"><a href="index.html" aria-current="page">Home</a><a href="guidelines.html">Guidelines</a><a href="gallery.html">Gallery</a><a href="form.html" class="cta">Build form</a></nav>
+    <nav class="site-nav" aria-label="Main"><a href="index.html" aria-current="page">Home</a><a href="guidelines.html">Guidelines</a><a href="gallery.html">Gallery</a><a href="prototype.html">Preview</a><a href="form.html" class="cta">Build form</a></nav>
   </div>
 </header>
 
 <main id="main">
-  <section class="hero">
+  <section class="hero painted">
+    <div class="hero-art" id="heroArt" role="img" aria-label="A crayon painting of the Grove in the current season, drawn slowly, stroke by stroke."></div>
+    <div class="hero-ctl"><span class="cap" id="heroCap"></span><span class="seasons" role="group" aria-label="Season of the Grove painting"><button type="button" data-season="spring">Spring</button><button type="button" data-season="summer">Summer</button><button type="button" data-season="fall">Fall</button><button type="button" data-season="winter">Winter</button></span><button type="button" id="heroPause" aria-pressed="false">Pause</button></div>
     <div class="wrap">
       <div class="hero-sign" data-subs-sign="big"></div>
+      <div class="hero-panel">
       <p class="eyebrow">An agentic AI tinkering lab for faculty</p>
       <h1><span class="small">Bring an idea.</span>The Grove Lab</h1>
       <p class="lede-serif">A tinkering lab for faculty who want to understand agentic AI and what you can build with it. You submit a build idea, and the Academic Innovations Group helps you see if current agentic tools are appropriate or helpful.</p>
       <div class="hero-actions">
         <a class="btn red" href="form.html" data-submit>Start the build form</a>
         <a class="btn outline-light" href="gallery.html">Browse the gallery</a>
+      </div>
       </div>
     </div>
   </section>
@@ -79,7 +83,7 @@
       <ol class="steps">
         <li><h3>Browse the gallery</h3><p>See builds sorted by pathway. Mark the ones close to what you want; they follow you into the form.</p></li>
         <li><h3>Say your idea</h3><p>Type it plainly in the "Here's my idea" box. If you choose, optional AI assistance from Jev suggests a build pathway. You can also skip AI and choose yourself.</p></li>
-        <li><h3>Fill out the form</h3><p>Each pathway has its own questions, an exemplar, and sample language. Skip what doesn't apply.</p></li>
+        <li><h3>Fill out the form</h3><p>Each pathway has its own questions, an exemplar, and sample language. Skip what doesn't apply. On the <a href="prototype.html">preview page</a>, see your idea drawn and choose its look.</p></li>
         <li><h3>Download and email</h3><p>Download your response and attach it to an email to <a href="mailto:mwatkins@olemiss.edu">mwatkins@olemiss.edu</a>.</p></li>
       </ol>
     </div>
@@ -115,6 +119,7 @@
     </div>
   </section>
 </main>
+<div class="frieze-wrap"><canvas class="grove-frieze" id="groveFrieze" width="1600" height="300" role="img" aria-label="A row of Grove trees in the current season."></canvas></div>
 <footer class="site-foot">
   <div class="wrap">
     <div class="foot-grid">
@@ -126,17 +131,18 @@
       <div>
         <h2>AI disclosure</h2>
         <p>This site was coded with Anthropic's Claude under Marc Watkins's direction. Marc supplied the vision and the language about prototypes, timelines, sharing, and the reflection. The build form offers optional AI assistance: only if you choose it, Jev, a TypeSafe AI model, reads your idea and suggests a pathway, and its suggestions are labeled as AI-generated. Nothing else on the site uses AI.</p>
+        <p>The look of this site is Understory: its colours, marks, and drawings of the Grove are generated in code. The drawings are stylised, not traced from photographs.</p>
       </div>
       <div>
         <h2>Accessibility</h2>
         <p>This site aims for WCAG 2.1 AA: keyboard navigation, visible focus, labeled fields, sufficient contrast, and reduced motion when your system asks for it. If something doesn't work for you, email <a href="mailto:mwatkins@olemiss.edu">mwatkins@olemiss.edu</a>.</p>
       </div>
     </div>
-    <div class="foot-base"><span>Builds from the lab are prototypes only.</span><span><a href="index.html">Home</a> · <a href="guidelines.html">Guidelines</a> · <a href="gallery.html">Gallery</a> · <a href="form.html">Build form</a> · <a href="admin.html">Admin</a></span></div>
+    <div class="foot-base"><span>Builds from the lab are prototypes only.</span><span><a href="index.html">Home</a> · <a href="guidelines.html">Guidelines</a> · <a href="gallery.html">Gallery</a> · <a href="prototype.html">Preview</a> · <a href="form.html">Build form</a> · <a href="admin.html">Admin</a></span></div>
   </div>
 </footer>
 
-<script src="js/data.js?v=20261009h"></script>
+<script src="js/data.js?v=20261112d"></script>
 <script>
 (() => {
   const G = window.GROVE, esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -149,6 +155,26 @@
       <div class="top"><b>0${p.n}</b><h3>${esc(p.title)}</h3></div>
       <div class="body"><p>${esc(p.short)}</p><p class="ask">${esc(p.asks)}</p><p class="ex">In the gallery: ${esc(ex)}</p><span class="more">See these builds →</span></div></a>`;
   }).join("");
+})();
+</script>
+<script src="js/understory-paint.js?v=20261112d"></script>
+<script>
+(function () {
+  var P = window.UnderstoryPaint; if (!P) return;
+  var season = P.seasonNow(), saved = null; try { saved = localStorage.getItem('grovelab.season'); } catch (e) {}
+  if (P.seasons[saved]) season = saved;
+  var settled = { spring: 'Petals drifting', summer: 'Fireflies out', fall: 'Leaves falling', winter: 'Snow falling' };
+  var cap = document.getElementById('heroCap'), btn = document.getElementById('heroPause');
+  var hero = P.stage(document.getElementById('heroArt'), { season: season, seed: 'grove-lab', trees: 5, fill: true, nearSide: 1, onStep: function (t) { cap.textContent = t || settled[season]; } });
+  btn.addEventListener('click', function () { var p = hero.pause(); btn.setAttribute('aria-pressed', p); btn.textContent = p ? 'Play' : 'Pause'; });
+  var fr = document.getElementById('groveFrieze'), frieze = null;
+  var chips = document.querySelectorAll('.hero-ctl [data-season]');
+  function mark() { chips.forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.season === season); }); }
+  chips.forEach(function (b) { b.addEventListener('click', function () { if (b.dataset.season === season) return; season = b.dataset.season; mark();
+    try { localStorage.setItem('grovelab.season', season); } catch (e) {}
+    hero.set({ season: season }); if (frieze) frieze.set({ season: season }); }); });
+  mark();
+  new IntersectionObserver(function (es, io) { es.forEach(function (e) { if (e.isIntersecting) { io.disconnect(); frieze = P.mount(fr, { season: season, seed: 'grove-lab-frieze', trees: 8, far: 12, near: false, duration: 9000 }); } }); }, { rootMargin: '100px' }).observe(fr);
 })();
 </script>
 </body>

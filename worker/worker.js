@@ -3,6 +3,8 @@
  * Holds one value: whether the build form is open for submissions.
  *   GET  /status                       -> { open, updated }
  *   POST /status { password, open }    -> sets it (password checked here, never in the page)
+ *   Add ?site=students (letters, numbers, dashes) to keep a separate switch for another site,
+ *   such as the Student Studio fork. No ?site= uses the original faculty-lab switch.
  * The admin password is a Worker secret. The status lives in a KV namespace bound as GROVE.
  * Separate from the Jev proxy on purpose, so nothing here can affect the builds that use Jev.
  *
@@ -34,8 +36,13 @@ async function sha256(s) {
   return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, "0")).join("");
 }
 
-async function readStatus(env) {
-  const v = await env.GROVE.get("status", "json");
+const keyFor = url => {
+  const site = url.searchParams.get("site");
+  return site && /^[a-z0-9-]{1,40}$/.test(site) ? "status:" + site : "status";
+};
+
+async function readStatus(env, key) {
+  const v = await env.GROVE.get(key, "json");
   return v && typeof v.open === "boolean" ? v : { open: true, updated: null };
 }
 
@@ -50,7 +57,8 @@ export default {
     if (!url.pathname.replace(/\/+$/, "").endsWith("/status")) return json({ error: "Not found. Use /status." }, 404);
     if (!env.GROVE) return json({ error: "The GROVE KV namespace is not bound. See wrangler.toml." }, 500);
 
-    if (request.method === "GET") return json(await readStatus(env));
+    const key = keyFor(url);
+    if (request.method === "GET") return json(await readStatus(env, key));
 
     if (request.method === "POST") {
       if (!env.ADMIN_PASSWORD) return json({ error: "No ADMIN_PASSWORD secret is set on the Worker." }, 500);
@@ -69,9 +77,9 @@ export default {
         return json({ error: "That password didn't work.", remaining: Math.max(0, MAX_FAILS - n) }, 401);
       }
       fails.delete(ip);
-      if (typeof body.open !== "boolean") return json({ ...(await readStatus(env)), verified: true });
+      if (typeof body.open !== "boolean") return json({ ...(await readStatus(env, key)), verified: true });
       const status = { open: body.open, updated: new Date().toISOString() };
-      await env.GROVE.put("status", JSON.stringify(status));
+      await env.GROVE.put(key, JSON.stringify(status));
       return json(status);
     }
     return json({ error: "Use GET or POST." }, 405);

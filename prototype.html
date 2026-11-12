@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en" data-page="prototype">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prototype Preview | The Grove Lab</title>
+<meta name="description" content="See how your build idea might render at each phase: a dimensional drawing of its architecture, a wireframe, a styled mock, and a clickable prototype. Choose the layout, spacing, corners, type, colors, and motion; your choices save into the build form.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,300..700&family=Schibsted+Grotesk:wght@400..900&family=Spline+Sans+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/grove.css?v=20261112d">
+<link rel="icon" href="img/grove-lab-mark.svg" type="image/svg+xml">
+<script src="js/status-config.js?v=20261112d"></script>
+<script src="js/status.js?v=20261112d"></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="site-head">
+  <div class="wrap">
+    <a class="brand" href="index.html" aria-label="The Grove Lab home">
+      <img class="mark" src="img/grove-lab-mark.svg" alt="" width="42" height="42">
+      <span><b>The Grove Lab</b><small>An agentic AI tinkering lab</small></span>
+    </a>
+    <nav class="site-nav" aria-label="Main"><a href="index.html">Home</a><a href="guidelines.html">Guidelines</a><a href="gallery.html">Gallery</a><a href="prototype.html" aria-current="page">Preview</a><a href="form.html" class="cta">Build form</a></nav>
+  </div>
+</header>
+
+<section class="hero short">
+  <div class="wrap">
+    <p class="eyebrow">Prototype preview</p>
+    <p class="hero-pill" data-subs-sign="compact"></p>
+    <h1>See it before it's built</h1>
+    <p class="lede-serif">Apple publishes a dimensional drawing of every device so accessory makers can build a case that fits. The lab does the same for your idea: one sheet that measures the architecture of the app, with no content in it, so you can check the shape before anyone writes code. Then the same drawing moves through the build phases, and you choose how it looks and feels.</p>
+  </div>
+</section>
+
+<main id="main">
+<div class="wrap pv-layout">
+  <aside class="pv-side" aria-label="Your choices">
+    <h2>Your choices</h2>
+    <p class="pv-note" id="pathNote"></p>
+    <p class="pv-note" id="titleNote"></p>
+    <p class="pv-note" id="exportNote"></p>
+    <form id="choices" onsubmit="return false"></form>
+    <p class="saved" id="savedNote">These save into your build form (section "Look and feel") and appear in every download.</p>
+    <p><a class="btn small ghost" href="form.html#s-look">Open the form at Look and feel</a></p>
+  </aside>
+
+  <div class="pv-main">
+    <div class="pv-phases">
+      <p class="eyebrow">Build phases</p>
+      <div class="phase-tabs" role="tablist" aria-label="Build phases" id="phaseTabs"></div>
+      <p class="phase-desc" id="phaseDesc"></p>
+    </div>
+
+    <section id="sheetWrap" aria-labelledby="tab-draw" class="sheet-area">
+      <div class="sheet-tools">
+        <button type="button" class="btn small" id="playFilm">Watch it draw itself</button>
+        <button type="button" class="btn small ghost" id="resetFilm">Show finished</button>
+        <button type="button" class="btn small ghost" id="dlSvg">Download the drawing (SVG)</button>
+        <button type="button" class="btn small ghost" id="printSheet">Print the sheet</button>
+      </div>
+      <div class="dw">
+        <header class="tb">
+          <div class="big">
+            <div><div class="lbl">UI page · dimensional drawing</div><h1 id="tbTitle">Your build</h1></div>
+            <div class="v scope">Architecture only: slots, spacing, radii, layers and viewport placement. Content and copy are out of scope.</div>
+          </div>
+          <div><div class="lbl">Dwg no.</div><div class="v">UI-PROTO-001</div></div>
+          <div><div class="lbl">Rev</div><div class="v" id="tbRev"></div></div>
+          <div><div class="lbl">Sheets</div><div class="v">1</div></div>
+          <div><div class="lbl">Units</div><div class="v">CSS px @ 1×</div></div>
+          <div><div class="lbl">Scale</div><div class="v">As noted</div></div>
+          <div><div class="lbl">Source</div><div class="v" id="tbSource"></div></div>
+          <div class="notes">
+            <div><span class="nh">NOTES:<span>(UNLESS OTHERWISE SPECIFIED)</span></span><ol>
+              <li>Do not scale from screen. Read the numbers.</li>
+              <li>All dimensions in CSS px at 1×. Padding is measured inside the 1 px border.</li>
+              <li>Slots are placeholders. Text, images and copy are not part of the drawing.</li></ol></div>
+            <div><span class="nh" aria-hidden="true">&nbsp;</span><ol start="4">
+              <li>Every dimension is a variable (S1, R2, H3…). Derived values are written as formulas.</li>
+              <li>HUG = sized by its content · FLEX = takes the remaining space · FILL = full width of its parent.</li>
+              <li>[TBD] = not yet decided in the build form. Grayscale by design; color is chosen in phase 3.</li></ol></div>
+          </div>
+          <div class="figs" id="tbFigs"></div>
+        </header>
+        <div class="scroll"><svg id="sheet" viewBox="0 0 1700 1060" role="img" aria-label="Dimensional drawing"></svg></div>
+        <div class="foot" id="sheetFoot"></div>
+      </div>
+    </section>
+
+    <section id="mockWrap" class="mock-area" hidden>
+      <div class="sheet-tools"><p class="mock-hint" id="mockHint"></p><button type="button" class="btn small ghost" id="resetProto">Start over</button></div>
+      <div class="mock" id="mock">
+        <div class="mock-chrome" aria-hidden="true"><i></i><i></i><i></i><span>localhost · prototype · nothing leaves this page</span></div>
+        <div class="mock-frame" id="mockFrame"><div class="mock-page" id="mockPage"></div></div>
+      </div>
+    </section>
+
+    <section class="pv-how" aria-labelledby="how-h">
+      <h2 id="how-h">How to read the sheet</h2>
+      <div class="pv-cols">
+        <div><h3>Codes, not numbers</h3><p>Every measurement is a variable. S is spacing, H is height, R is radius, T is type, M is motion. The tables on the right give each code's value, and derived values show their formula, so a change to one number ripples through the whole sheet.</p></div>
+        <div><h3>Slots, not content</h3><p>Dashed boxes are slots: a title slot, a content slot, an image slot. HUG means the box is sized by what goes in it, FLEX means it takes the room that is left, FILL means it spans its parent. Your real words and images arrive later.</p></div>
+        <div><h3>Layers and details</h3><p>The exploded view lifts the page into layers, from the viewport up to the controls. Detail circles on the plan point at features drawn larger: the controls with their 44 px touch area, the nested corner, the radii, the type scale, and the motion timing.</p></div>
+        <div><h3>What AIG does with it</h3><p>Nothing here is a promise of a finished product. The sheet is a conversation piece: bring it, mark it up, and the lab builds the prototype from the agreed shape. Most builds still take a week or more, and AIG may not be able to meet every request.</p></div>
+      </div>
+    </section>
+  </div>
+</div>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<footer class="site-foot">
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <h2>The Grove Lab</h2>
+        <p>A tinkering lab by Marc Watkins. Send build ideas to <a href="mailto:mwatkins@olemiss.edu">mwatkins@olemiss.edu</a>.</p>
+        <p>Most gallery builds come from <a href="https://6a90f8fa674c4e3e5b9c8ab0--contextisallyouneed.netlify.app/" target="_blank" rel="noopener">Context Is All You Need</a>. Quoted language is Marc's, from <a href="https://marcwatkins.substack.com/" target="_blank" rel="noopener">Rhetorica</a>.</p>
+        <p>The drawing method on this page follows the <a href="https://github.com/enesozturk/dimensional-drawing" target="_blank" rel="noopener">dimensional-drawing</a> skill by Enes Ozturk (MIT), itself after <a href="https://developer.apple.com/accessories/dimensional-drawings/" target="_blank" rel="noopener">Apple's accessory dimensional drawings</a>.</p>
+      </div>
+      <div>
+        <h2>AI disclosure</h2>
+        <p>This site was coded with Anthropic's Claude under Marc Watkins's direction. Marc supplied the vision and the language about prototypes, timelines, sharing, and the reflection. The build form offers optional AI assistance: only if you choose it, Jev, a TypeSafe AI model, reads your idea and suggests a pathway, and its suggestions are labeled as AI-generated. The preview on this page is drawn by plain code from your choices; no AI model is involved.</p>
+        <p>The look of this site is Understory: its colours, marks, and drawings of the Grove are generated in code. The drawings are stylised, not traced from photographs.</p>
+      </div>
+      <div>
+        <h2>Accessibility</h2>
+        <p>This site aims for WCAG 2.1 AA: keyboard navigation, visible focus, labeled fields, sufficient contrast, and reduced motion when your system asks for it. The drawing has a text description, and the prototype's buttons are real buttons. If something doesn't work for you, email <a href="mailto:mwatkins@olemiss.edu">mwatkins@olemiss.edu</a>.</p>
+      </div>
+    </div>
+    <div class="foot-base"><span>Builds from the lab are prototypes only.</span><span><a href="index.html">Home</a> · <a href="guidelines.html">Guidelines</a> · <a href="gallery.html">Gallery</a> · <a href="prototype.html">Preview</a> · <a href="form.html">Build form</a> · <a href="admin.html">Admin</a></span></div>
+  </div>
+</footer>
+
+<script src="js/data.js?v=20261112d"></script>
+<script src="js/prototype.js?v=20261112d"></script>
+</body>
+</html>

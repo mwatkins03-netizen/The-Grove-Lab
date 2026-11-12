@@ -37,7 +37,7 @@ function apply() {
 }
 
 async function refresh() {
-  if (!base) return status;
+  if (!base) return refreshFromConfig();
   const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 4000);
   try {
     const r = await fetch(base + "/status", { cache: "no-store", signal: ctl.signal });
@@ -45,6 +45,19 @@ async function refresh() {
     if (r.ok && typeof j.open === "boolean") { status = { open: j.open, updated: j.updated, source: "live" }; write(status); apply(); }
   } catch { /* keep the cached or config value */ }
   finally { clearTimeout(t); }
+  return status;
+}
+
+/* Without a Worker, the config file is the switch. Browsers (and GitHub Pages) cache that file for a while,
+   so re-read it fresh and use whatever it says now. */
+async function refreshFromConfig() {
+  const el = document.querySelector('script[src*="status-config"]');
+  if (!el) return status;
+  try {
+    const txt = await (await fetch(el.src, { cache: "no-store" })).text();
+    const m = txt.match(/\bopen:\s*(true|false)\b/);
+    if (m && (m[1] === "true") !== status.open) { status = { open: m[1] === "true", source: "config" }; apply(); }
+  } catch { /* keep what the cached file said */ }
   return status;
 }
 

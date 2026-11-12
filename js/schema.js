@@ -163,6 +163,12 @@ const SECTIONS = [
       { id: "look_mood", type: "text", label: "Three words for how it should feel", placeholder: "Example: calm, archival, warm" },
       { id: "look_refs", type: "textarea", label: "Sites, images, or builds whose look you like", help: "Links are welcome. Say what you like about each." },
       { id: "look_colors", type: "radio", label: "Colors", cols: true, options: ["University colors", "Colors that fit the subject", "Surprise me"] },
+      { id: "look_preview", type: "note", text: "Want to see these choices drawn? The preview page draws your idea as a one-sheet dimensional drawing, then shows it as a wireframe, a styled mock, and a clickable prototype. Choices you make there appear here and in your download.", link: "prototype.html", linkText: "Open the prototype preview" },
+      { id: "proto_layout", type: "radio", label: "Layout pattern", cols: true, help: "How the screens are arranged. The preview page shows each one.", options: ["Guided steps", "One long page", "Workspace", "Map or board", "Gallery grid"] },
+      { id: "proto_density", type: "radio", label: "Spacing", cols: true, options: ["Roomy", "Standard", "Compact"] },
+      { id: "proto_corners", type: "radio", label: "Corners", cols: true, options: ["Square", "Soft", "Round"] },
+      { id: "proto_type", type: "radio", label: "Type", cols: true, options: ["Serif, editorial", "Sans, institutional", "Display, bold"] },
+      { id: "proto_motion", type: "radio", label: "Motion", cols: true, options: ["None", "Calm", "Lively"] },
       { id: "look_avoid", type: "text", label: "Anything to avoid?" },
     ] },
 
