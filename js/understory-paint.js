@@ -12,12 +12,15 @@
    Node
      UnderstoryPaint.renderGif({ w: 480, h: 300, subject: 'grove', season: 'fall', drift: 60 })  -> Uint8Array
 
-   subjects: grove, catalpa, lyceum, ventress, barnard, walk      seasons: spring, summer, fall, winter */
+   subjects: grove, catalpa, lyceum, ventress, barnard, walk      seasons: spring, summer, fall, winter
+   styles:   crayon (default), leaf (leaf by leaf, after Theora Hamblett's way of painting trees) */
 (function (root) {
   const NAMES = ['paper', 'deep', 'ink', 'pine', 'moss', 'creek', 'mist', 'dusk', 'wisteria', 'persimmon', 'goldenrod',
-    'sprout', 'redbud', 'oxblood', 'straw', 'brick', 'white', 'red'];
+    'sprout', 'redbud', 'oxblood', 'straw', 'brick', 'white', 'red',
+    'grasslt', 'sky', 'crimson', 'lilac', 'lemon', 'peach', 'bark', 'plum']; // the last eight are used by the leaf-by-leaf style
   const HEX = ['#F4EFE3', '#E6DCC8', '#1E1B18', '#1F4A3C', '#4E8B57', '#2F8F8A', '#A9D3DD', '#26355C', '#8C7BD1', '#E2582B', '#E9A72B',
-    '#9BC46A', '#D96C8E', '#4A1410', '#EFD27A', '#B5301C', '#FFFDF7', '#CE1126'];
+    '#9BC46A', '#D96C8E', '#4A1410', '#EFD27A', '#B5301C', '#FFFDF7', '#CE1126',
+    '#C4DE9A', '#E3EEEC', '#B3274F', '#CFC4EA', '#F3E470', '#F4BE96', '#D8D4CB', '#6A5478'];
   const K = {}; NAMES.forEach((n, i) => K[n] = i);
   const CLEAR = 31; // transparent slot: empty layers, GIF frame differences, erasing
 
@@ -28,6 +31,17 @@
     fall:   { bg: 'oxblood', ground: ['brick', 'persimmon'], trunk: 'straw', leaf: ['persimmon', 'goldenrod', 'brick', 'persimmon', 'straw'], near: 'ink', prop: 'mist', b: ['persimmon', 'straw', 'ink', 'ink'] },
     winter: { bg: 'dusk', ground: ['white', 'mist'], trunk: 'paper', leaf: ['straw', 'brick'], near: 'ink', prop: 'mist', b: ['brick', 'white', 'white', 'straw'] }
   };
+  // Leaf by leaf: a second way of painting the same scenes, after Theora Hamblett's method of building a tree from
+  // thousands of small layered dabs. Pale sky, soft grass, slender pale trunks, fine dark branches, one colour family
+  // per tree (hues = [shade, body, highlight]), and a stippled oval of shade under each one.
+  const LEAF = {
+    spring: { bg: 'sky', ground: ['grasslt', 'sprout'], trunk: 'bark', twig: 'ink', shade: 'moss', hues: [['redbud', 'white', 'lilac'], ['sprout', 'lemon', 'white'], ['wisteria', 'lilac', 'white'], ['redbud', 'lilac', 'white']], leaf: ['white', 'redbud'], near: 'redbud', prop: 'ink', b: ['brick', 'white', 'dusk', 'dusk'] },
+    summer: { bg: 'sky', ground: ['grasslt', 'sprout'], trunk: 'bark', twig: 'ink', shade: 'pine', hues: [['pine', 'moss', 'sprout'], ['moss', 'sprout', 'lemon'], ['creek', 'moss', 'sprout'], ['moss', 'sprout', 'lemon']], leaf: ['moss', 'sprout'], near: 'moss', prop: 'ink', b: ['brick', 'white', 'dusk', 'dusk'] },
+    fall:   { bg: 'sky', ground: ['grasslt', 'sprout'], trunk: 'bark', twig: 'ink', shade: 'plum', hues: [['crimson', 'redbud', 'peach'], ['wisteria', 'lilac', 'white'], ['goldenrod', 'lemon', 'white'], ['persimmon', 'peach', 'lemon'], ['brick', 'persimmon', 'goldenrod']], leaf: ['crimson', 'wisteria', 'goldenrod', 'persimmon'], near: 'crimson', prop: 'ink', b: ['brick', 'white', 'dusk', 'dusk'] },
+    winter: { bg: 'mist', ground: ['white', 'lilac'], trunk: 'bark', twig: 'ink', shade: 'wisteria', hues: [['white', 'white', 'white']], leaf: ['straw', 'brick'], near: 'white', prop: 'ink', b: ['brick', 'white', 'white', 'straw'] }
+  };
+  const STYLES = { crayon: SEASONS, leaf: LEAF };
+  const table = style => STYLES[style] || SEASONS;
   const ORDER = ['spring', 'summer', 'fall', 'winter'];
   const SUBJECTS = {
     grove: { name: 'The Grove' }, catalpa: { name: 'The catalpa' },
@@ -127,8 +141,56 @@
     return { N, wt, rad, x, gy, H, cy, rx, ry };
   }
 
+  // Leaf-by-leaf tree: the crown is laid down one dab at a time in rings that fan out from the top of the trunk.
+  // Each leaf is a dab of the tree's shade or body colour with a lighter touch on top; the shaded side runs darker.
+  function leafTree(seed, x, gy, H, season, opt) {
+    const sp0 = SPECIES[opt.species || 'oak'], lite = opt.lite, sp = Object.assign({}, sp0, sp0.big ? {} : { lean: .06 }, { n: Math.round(sp0.n * 1.5) });
+    const r = rng(hash(seed)), T = buildTree(r, x, gy, H, sp, lite), L = LEAF[season];
+    const s = .4 + .6 * H / 400, ops = [], N = T.N, jit = v => (r() - .5) * 2 * v;
+    const hue = sp0.evergreen ? (season === 'winter' ? ['pine', 'moss', 'sprout'] : ['moss', 'sprout', 'lemon']) : (opt.hue || L.hues[Math.floor(r() * L.hues.length)]);
+    const dot = (px, py, R, c, p) => ops.push([px, py, px, py, R, R, K[c], p || 1.25]);
+    // shade: an oval of stippled dots on the grass, with fallen leaves among them in fall
+    const srx = T.rx * (sp0.big ? .62 : .7), sry = Math.max(5, H * .055), gap = (lite ? 3.6 : 4.2) * Math.sqrt(s); let row = 0;
+    for (let yy = -sry; yy <= sry; yy += gap * .8, row++) for (let xx = -srx; xx <= srx; xx += gap) {
+      const px = xx + (row % 2 ? gap / 2 : 0); if ((px / srx) * (px / srx) + (yy / sry) * (yy / sry) > 1) continue;
+      dot(x + px + jit(gap * .18), gy + 4 + sry * .7 + yy + jit(gap * .18), 1.1 * Math.sqrt(s), season === 'fall' && r() < .3 ? hue[r() < .5 ? 0 : 1] : L.shade, 1.2);
+    }
+    // a slender trunk: pale body, a light left side, a dark right edge, a few knots; then fine dark branches
+    const thick = T.wt[0] * .3; let k = 0;
+    for (let i = 1; i < N.length; i++) { const n = N[i], p = N[n.p]; if (T.wt[i] < thick) continue; const R0 = T.rad(n.p) * .8, R1 = T.rad(i) * .8;
+      ops.push([p.x, p.y, n.x, n.y, R0, R1, K[L.trunk], 1.2]);
+      if (R1 > 2.2) ops.push([p.x - R0 * .45, p.y, n.x - R1 * .45, n.y, Math.max(.8, R0 * .28), Math.max(.8, R1 * .28), K.white, 1.15]);
+      ops.push([p.x + R0 * .72, p.y, n.x + R1 * .72, n.y, .9, .9, K[L.twig], 1.1]);
+      if (!lite && R1 > 2.5 && k++ % 5 === 2) ops.push([n.x - R1 * .2, n.y, n.x + R1 * .5, n.y + jit(1.5), .8, .7, K[L.twig], .9]); }
+    for (let i = 1; i < N.length; i++) { const n = N[i], p = N[n.p]; if (T.wt[i] >= thick) continue; const R = Math.min(T.rad(i) * .5, 1.5 * s); ops.push([p.x, p.y, n.x, n.y, Math.max(.8, R), Math.max(.7, R * .8), K[L.twig], 1.15]); }
+    if (sp0.big && !lite) for (const side of [-1, 1]) { let best = -1; for (let i = 1; i < N.length; i++) if (T.wt[i] > 2 && (N[i].x - x) * side > H * .3 && (best < 0 || N[i].y > N[best].y)) best = i;
+      if (best > 0) ops.push([N[best].x, N[best].y + 2, N[best].x, gy + 5, 1.1 * s, 1.1 * s, K[L.prop], 1.1]); }
+    // the crown
+    const bare = season === 'winter' && !sp0.evergreen;
+    if (bare) { for (let i = 1; i < N.length; i++) if (T.wt[i] > 1 && T.wt[i] < 40 && r() < .4) dot(N[i].x, N[i].y - 2, 1.6 * Math.sqrt(s), 'white', 1.2); }
+    else {
+      const lr = (lite ? 1.45 : 2.05) * Math.sqrt(s), g = lr * 2.2, rx = T.rx * 1.02, ry = T.ry * 1.05, oy = ry * .5, snow = season === 'winter';
+      const accent = L.hues[(L.hues.indexOf(hue) + 2) % L.hues.length] || hue; let i = 0;
+      for (let q = g * .5; q < (rx + ry) * 1.3; q += g * .9) { // rings fanning out from where the trunk enters the crown
+        const cnt = Math.max(5, Math.floor(6.283 * q / g)), a0 = r() * 6.283;
+        for (let c = 0; c < cnt; c++, i++) {
+          const a = a0 + c / cnt * 6.283, px = Math.cos(a) * q + jit(g * .13), py = oy + Math.sin(a) * q * .92 + jit(g * .13), ryy = py > 0 ? ry * .78 : ry;
+          if (Math.pow(Math.abs(px / rx), 2.7) + Math.pow(Math.abs(py / ryy), 2.7) > 1) continue;
+          if (sp0.vase && Math.abs(px) > rx * (.3 + .7 * (ry - py) / (2 * ry))) continue;
+          const X = x + px, Y = T.cy + py;
+          if (sp0.big && season === 'spring' && i % 9 === 3) { for (let m = 0; m < 4; m++) dot(X + jit(lr) * (1 - m / 5), Y - m * lr * .9, lr * (.95 - m * .12), 'white', 1.3); continue; }
+          const dark = .3 + .3 * (px / rx) + .3 * (py / ry); // lower right runs to the shade colour
+          dot(X, Y, lr, r() < .035 ? accent[0] : hue[r() < dark ? 0 : 1], 1.25);
+          if (r() < .75) dot(X - lr * .32, Y - lr * .34, lr * .5, snow && i % 3 === 0 ? 'white' : hue[2], 1.3);
+        }
+      }
+      if (season === 'fall' && !lite) for (let m = 0; m < 30; m++) dot(x + jit(T.rx * 1.1), gy + 6 + r() * 16 * s, lr * .8, hue[m % 2], 1.2);
+    }
+    return { ops, crown: { x: x, y: T.cy, rx: T.rx, ry: T.ry }, hue };
+  }
+
   function treeOps(seed, x, gy, H, season, opt) {
-    opt = opt || {}; const sp = SPECIES[opt.species || 'oak'], r = rng(hash(seed)), T = buildTree(r, x, gy, H, sp, opt.lite), S = SEASONS[season];
+    opt = opt || {}; if (opt.style === 'leaf') return leafTree(seed, x, gy, H, season, opt); const sp = SPECIES[opt.species || 'oak'], r = rng(hash(seed)), T = buildTree(r, x, gy, H, sp, opt.lite), S = SEASONS[season];
     const s = .4 + .6 * H / 400, ops = [], N = T.N, lite = opt.lite;
     const pick = a => K[a[Math.floor(r() * a.length)]], jit = v => (r() - .5) * 2 * v;
     const dot = (x, y, R, c, p) => ops.push([x, y, x, y, R, R, c, p || 1.1]);
@@ -182,12 +244,16 @@
   }
 
   /* ---------- campus landmarks, drawn in unit space: x 0..1 across the width, y up from the ground in widths ---------- */
-  function building(kind, cx, base, W, S) {
+  function building(kind, cx, base, W, S, detail) {
     const B = { wall: S.b[0], trim: S.b[1], roof: S.b[2], glass: S.b[3] }, ops = [], X = u => cx + (u - .5) * W, Y = v => base - v * W, sp = Math.max(1.8, W * .008), fine = Math.max(1.3, sp * .6);
     const poly = (pts, c, s) => { for (const o of hatch(pts.map(q => [X(q[0]), Y(q[1])]), K[c], s || sp, 1.08)) ops.push(o); };
-    const rect = (x0, y0, x1, y1, c, s) => poly([[x0, y0], [x1, y0], [x1, y1], [x0, y1]], c, s);
+    const rect = (x0, y0, x1, y1, c, s) => { poly([[x0, y0], [x1, y0], [x1, y1], [x0, y1]], c, s);
+      if (detail && c === B.wall && W * (y1 - y0) > 14) for (let yy = Y(y0) - sp * 1.6, n = 0; yy > Y(y1) + 1; yy -= sp * 2.4, n++) { // brick courses
+        ops.push([X(x0) + 1, yy, X(x1) - 1, yy, .7, .7, K.oxblood, .55]);
+        for (let xx = X(x0) + sp * (n % 2 ? 2 : 4); xx < X(x1) - 2; xx += sp * 4) ops.push([xx, yy, xx, yy + sp * 2.2, .6, .6, K.oxblood, .45]); } };
     const dome = (x, y, rx, ry, c, s) => { const pts = []; for (let i = 0; i <= 14; i++) { const a = Math.PI * i / 14; pts.push([x + Math.cos(a) * rx, y + Math.sin(a) * ry]); } poly(pts, c, s); };
-    const win = (x, y, ww, hh, arch, c) => { rect(x - ww / 2, y, x + ww / 2, y + hh, c || B.glass, fine); if (arch) dome(x, y + hh, ww / 2, ww / 2, c || B.glass, fine); };
+    const win = (x, y, ww, hh, arch, c) => { rect(x - ww / 2, y, x + ww / 2, y + hh, c || B.glass, fine); if (arch) dome(x, y + hh, ww / 2, ww / 2, c || B.glass, fine);
+      if (detail && !c && W * ww > 7) { ops.push([X(x), Y(y), X(x), Y(y + hh), .7, .7, K[B.trim], 1.1], [X(x - ww / 2), Y(y + hh * .5), X(x + ww / 2), Y(y + hh * .5), .7, .7, K[B.trim], 1.1], [X(x - ww / 2) - 1, Y(y) + 1.5, X(x + ww / 2) + 1, Y(y) + 1.5, .9, .9, K[B.trim], 1.1]); } };
     const line = (x0, y0, x1, y1, c, R) => ops.push([X(x0), Y(y0), X(x1), Y(y1), R || 1.3, R || 1.3, K[c], 1.1]);
     const circ = (x, y, R, c) => ops.push([X(x), Y(y), X(x), Y(y), R * W, R * W, K[c], 1.2]);
 
@@ -252,21 +318,33 @@
 
   /* ---------- a scene in three depths: 0 far (sky, distant trees, landmark), 1 middle (lawn, trees), 2 near (framing) ---------- */
   function scene(o) {
-    const w = o.w, h = o.h, season = o.season, S = SEASONS[season], subject = SUBJECTS[o.subject] ? o.subject : 'grove', seed = o.seed || 'grove';
+    const w = o.w, h = o.h, season = o.season, leafy = o.style === 'leaf', S = table(o.style)[season], subject = SUBJECTS[o.subject] ? o.subject : 'grove', seed = o.seed || 'grove';
     const r = rng(hash(seed + '/' + season + '/' + subject)), hz = h * .8, gy = h * .86, ops = [], marks = [], crowns = [];
     const put = (list, layer, p) => { for (const q of list) { q[8] = layer; if (p) q[7] *= p; ops.push(q); } };
     const mark = label => marks.push({ i: ops.length, label });
     const landmark = SUBJECTS[subject].w;
 
+    if (leafy) { // a brushed sky and a few birds
+      mark('The sky'); const sk = [];
+      for (let b = 0; b < 7; b++) { const y = h * (.04 + b * .1 + r() * .04), ph = r() * 6; for (let x = -20; x < w + 20; x += 30) sk.push([x, y + Math.sin(x / 170 + ph) * h * .012, x + 30, y + Math.sin((x + 30) / 170 + ph) * h * .012, h * .016, h * .016, K.white, .38]); }
+      if (season !== 'winter') for (let b = 0; b < 6; b++) { const x = w * (.1 + r() * .8), y = h * (.05 + r() * .22), q = h * .011; sk.push([x - q, y - q * .6, x, y, .9, .8, K.ink, 1.1], [x, y, x + q, y - q * .6, .8, .9, K.ink, 1.1]); }
+      put(sk, 0);
+    }
     mark('The far lawn'); put(wipe(w, h, K[S.ground[0]], hz, h, h * .035, r), 0, .6);
     mark('Trees in the distance');
     const nf = o.far == null ? 7 : o.far;
-    for (let i = 0; i < nf; i++) put(treeOps(seed + '/f' + i, w * (i + .5 + (r() - .5) * .6) / nf, hz + 2, h * (.26 + r() * .12), season, { species: i % 3 === 1 ? 'elm' : 'oak', lite: true }).ops, 0, .58);
-    if (landmark) { mark(SUBJECTS[subject].name); put(building(subject, w * .5, hz + 2, w * landmark, S), 0); }
+    for (let i = 0; i < nf; i++) put(treeOps(seed + '/f' + i, w * (i + .5 + (r() - .5) * .6) / nf, hz + 2, h * (.26 + r() * .12), season, { species: i % 3 === 1 ? 'elm' : 'oak', lite: true, style: o.style, hue: leafy ? S.hues[(i + 1) % S.hues.length] : null }).ops, 0, leafy ? .66 : .58);
+    if (landmark) { mark(SUBJECTS[subject].name); put(building(subject, w * .5, hz + 2, w * landmark, S, leafy), 0); }
 
     mark('The lawn'); put(wipe(w, h, K[S.ground[0]], gy + h * .02, h, h * .035, r), 1);
-    const fl = []; for (let i = 0; i < w / 14; i++) { const x = r() * w, y = gy + 6 + r() * (h - gy - 6); fl.push([x, y, x + 10 + r() * 22, y + (r() - .5) * 3, 2.2, 1, K[S.ground[1]], .9]); }
-    if (season === 'summer') for (let i = 0; i < w / 40; i++) { const x = r() * w, y = gy + 8 + r() * (h - gy - 10); fl.push([x, y, x + 8, y, 5, 3, K.straw, .7]); }
+    const fl = [];
+    if (leafy) { // short upright grass strokes in two greens, then small flowers
+      const g2 = season === 'winter' ? 'mist' : 'moss';
+      for (let i = 0; i < w * 1.1; i++) { const x = r() * w, y = hz + 6 + r() * (h - hz), far = y < gy; fl.push([x, y, x + (r() - .5) * 3, y - (far ? 4 : 6) - r() * (far ? 4 : 9), far ? .9 : 1.2, .7, K[r() < .25 ? g2 : S.ground[1]], far ? .7 : .85]); }
+      if (season !== 'winter') for (let i = 0; i < w / 14; i++) { const x = r() * w, y = gy + 6 + r() * (h - gy - 8), q = 1.3 + r() * .8, c = ['white', 'lemon', 'redbud', 'white'][Math.floor(r() * 4)]; fl.push([x, y, x, y, q, q, K[c], 1.3]); }
+    }
+    else for (let i = 0; i < w / 14; i++) { const x = r() * w, y = gy + 6 + r() * (h - gy - 6); fl.push([x, y, x + 10 + r() * 22, y + (r() - .5) * 3, 2.2, 1, K[S.ground[1]], .9]); }
+    if (season === 'summer' && !leafy) for (let i = 0; i < w / 40; i++) { const x = r() * w, y = gy + 8 + r() * (h - gy - 10); fl.push([x, y, x + 8, y, 5, 3, K.straw, .7]); }
     put(fl, 1);
     if (o.gameDay) { mark('Game-day tents'); const cs = [K.white, K.red, K.mist]; for (let i = 0; i < Math.max(4, w / 110); i++) put(tentOps(r() * w, gy + 6 + r() * 6, h * .045, cs[i % 3]), 1); }
 
@@ -276,17 +354,40 @@
     else { const n = o.trees || 4, tr = rng(hash(seed + '/trees')), kinds = ['oak', 'elm', 'oak', 'magnolia', 'oak', 'elm', 'oak', 'magnolia'];
       for (let i = 0; i < n; i++) list.push({ x: w * (i + .5 + (tr() - .5) * .28) / n, H: h * (.56 + tr() * .2), sp: kinds[(i + Math.floor(tr() * 2)) % kinds.length] }); list.sort((a, b) => a.H - b.H); }
     const label = { oak: 'An oak', elm: 'An elm', magnolia: 'A magnolia', catalpa: 'The catalpa, limb by limb' };
-    list.forEach((t, i) => { mark(label[t.sp]); const q = treeOps(seed + '/t' + i + t.sp, t.x, gy + (t.H / h - .56) * h * .16, t.H, season, { species: t.sp }); put(q.ops, 1); crowns.push(q.crown); });
+    list.forEach((t, i) => { mark(label[t.sp]); const q = treeOps(seed + '/t' + i + t.sp, t.x, gy + (t.H / h - .56) * h * .16, t.H, season, { species: t.sp, style: o.style, hue: leafy ? S.hues[i % S.hues.length] : null }); put(q.ops, 1); crowns.push(q.crown); });
     for (const e of o.extra || []) {
-      if (e.kind === 'tree') { mark('A tree you planted'); const q = treeOps(e.seed, e.x * w, gy + 4, h * e.H, season, { species: e.sp }); put(q.ops, 1); crowns.push(q.crown); }
+      if (e.kind === 'tree') { mark('A tree you planted'); const q = treeOps(e.seed, e.x * w, gy + 4, h * e.H, season, { species: e.sp, style: o.style }); put(q.ops, 1); crowns.push(q.crown); }
       else put([[e.a * w, e.b * h, e.c * w, e.d * h, e.r * w, e.r * w, K[e.col], 1.05]], 1);
+    }
+    if (leafy && o.figures !== false && !o.gameDay) { // small flat figures and a dog give the lawn some life
+      mark('People on the lawn'); const fg = [], skins = ['peach', 'oxblood', 'straw', 'peach'], cloth = ['crimson', 'dusk', 'wisteria', 'goldenrod', 'creek', 'white', 'persimmon'];
+      const person = (fx, fy, fh, i) => {
+        const skin = skins[i % skins.length], c = K[cloth[Math.floor(r() * cloth.length)]], dress = r() < .5, lean = (r() - .5) * fh * .06;
+        fg.push([fx - fh * .06, fy, fx - fh * .05, fy - fh * .36, 1, 1, K.ink, 1.2], [fx + fh * .06, fy, fx + fh * .05, fy - fh * .36, 1, 1, K.ink, 1.2]);
+        const bw = dress ? .17 : .1; for (const q of hatch([[fx - fh * bw, fy - fh * .3], [fx + fh * bw, fy - fh * .3], [fx + fh * .09 + lean, fy - fh * .72], [fx - fh * .09 + lean, fy - fh * .72]], c, 1.5, 1.2)) fg.push(q);
+        fg.push([fx - fh * .09 + lean, fy - fh * .68, fx - fh * .17, fy - fh * .44, .9, .9, K[skin], 1.2], [fx + fh * .09 + lean, fy - fh * .68, fx + fh * .17, fy - fh * .44, .9, .9, K[skin], 1.2]);
+        const hx = fx + lean, hy = fy - fh * .82; fg.push([hx, hy - fh * .04, hx, hy - fh * .04, fh * .105, fh * .105, K[skin === 'oxblood' ? 'ink' : ['ink', 'oxblood', 'goldenrod'][i % 3]], 1.3], [hx, hy + fh * .02, hx, hy + fh * .02, fh * .085, fh * .085, K[skin], 1.3]);
+      };
+      const np = 4 + Math.floor(r() * 3); for (let i = 0; i < np; i++) person(w * (.14 + .72 * (i + r() * .7) / np), gy + h * (.035 + r() * .07), h * (.085 + r() * .02), i);
+      const dx = w * (.3 + r() * .4), dy = gy + h * .09, q = h * .012, dc = K[season === 'winter' ? 'oxblood' : 'white'];
+      fg.push([dx - q * 1.4, dy - q * 1.6, dx + q * 1.4, dy - q * 1.6, q * .8, q * .8, dc, 1.3], [dx + q * 2.1, dy - q * 2.4, dx + q * 2.1, dy - q * 2.4, q * .7, q * .7, dc, 1.3], [dx - q * 2, dy - q * 2.2, dx - q * 2.8, dy - q * 3.2, .9, .8, dc, 1.2]);
+      for (const lx of [-1.2, -.5, .6, 1.3]) fg.push([dx + q * lx, dy - q, dx + q * lx, dy, .9, .9, dc, 1.2]);
+      fg.push([dx + q * 2.5, dy - q * 2.5, dx + q * 2.5, dy - q * 2.5, .8, .8, K.ink, 1.3]);
+      put(fg, 1);
     }
     const sky = [];
     if (season === 'winter') for (let i = 0; i < w * h / 2600; i++) { const x = r() * w, y = r() * gy, q = 1 + r() * 1.6; sky.push([x, y, x, y, q, q, K.white, 1.2]); }
     if (season === 'spring') for (let i = 0; i < w * h / 9000; i++) { const x = r() * w, y = r() * h; sky.push([x, y, x + 4, y + 2, 2, 1, K[r() < .5 ? 'white' : 'redbud'], 1]); }
     put(sky, 1);
 
-    if (o.near !== false) { // a big tree just off the edge of the picture, and grass at the bottom edge
+    if (o.near !== false && leafy) { // a bough of large dabs hanging into one top corner, and a few flowers at the bottom edge
+      mark('Up close'); const side = o.nearSide || (r() < .5 ? -1 : 1), cx = side < 0 ? 0 : w, hue = S.hues[S.hues.length - 1], g = h * .02, nb = [];
+      if (season !== 'winter') for (let yy = 0, row = 0; yy < h * .3; yy += g * .9, row++) for (let xx = 0; xx < w * .34; xx += g) {
+        const px = xx + (row % 2 ? g / 2 : 0); if (Math.pow(px / (w * .34), 2) + Math.pow(yy / (h * .3), 2) > 1) continue;
+        const X = cx - side * px + (r() - .5) * g * .2, Y = yy + (r() - .5) * g * .2; nb.push([X, Y, X, Y, g * .4, g * .4, K[hue[r() < .45 ? 0 : 1]], 1.25], [X - g * .12, Y - g * .12, X - g * .12, Y - g * .12, g * .2, g * .2, K[hue[2]], 1.3]); }
+      for (let i = 0; i < w / 60; i++) { const X = r() * w, Y = h - 4 - r() * h * .04; nb.push([X, h + 2, X, Y, 1.4, 1, K[S.ground[1]], 1.1], [X, Y, X, Y, 3.2, 3.2, K[season === 'winter' ? 'white' : S.near], 1.3]); }
+      put(nb, 2);
+    } else if (o.near !== false) { // a big tree just off the edge of the picture, and grass at the bottom edge
       mark('Up close'); const side = o.nearSide || (r() < .5 ? -1 : 1);
       put(treeOps(seed + '/near', side < 0 ? -w * .07 : w * 1.07, h * 1.04, h * 1.5, season, { species: 'oak', mono: K[S.near], lite: false }).ops, 2);
       const g = []; for (let i = 0; i < w / 16; i++) { const x = r() * w, len = h * (.015 + r() * .04); g.push([x, h + 3, x + (r() - .5) * 12, h - len, 2.6, .8, K[S.near], 1.1]); }
@@ -297,15 +398,15 @@
   }
   // a painted-over transition: the new sky is brushed across, and on layered stages the layers above are rubbed out in step
   function wipeIn(o, layered) {
-    const bg = K[SEASONS[o.season].bg], out = [];
+    const bg = K[table(o.style)[o.season].bg], out = [];
     for (const q of wipe(o.w, o.h, bg, 0, o.h, o.h / 8, rng(hash((o.seed || '') + 'w' + o.season)))) { q[8] = 0; out.push(q); if (layered) for (const L of [1, 2]) { const e = q.slice(); e[6] = CLEAR; e[8] = L; out.push(e); } }
     return out;
   }
 
   /* ---------- drift: what keeps moving after the drawing is done (leaves, petals, snow, fireflies) ---------- */
-  function Drift(season, w, h, crowns, gy, seed) { this.season = season; this.w = w; this.h = h; this.crowns = crowns; this.gy = gy; this.r = rng(hash(seed + '/drift')); this.P = []; this.k = Math.max(.5, h / 620); }
+  function Drift(season, w, h, crowns, gy, seed, style) { this.S = table(style)[season]; this.fly = style === 'leaf' ? K.goldenrod : K.straw; this.season = season; this.w = w; this.h = h; this.crowns = crowns; this.gy = gy; this.r = rng(hash(seed + '/drift')); this.P = []; this.k = Math.max(.5, h / 620); }
   Drift.prototype.step = function (wind) {
-    const r = this.r, P = this.P, k = this.k, S = SEASONS[this.season], landed = [], cr = this.crowns; wind = wind || 0;
+    const r = this.r, P = this.P, k = this.k, S = this.S, landed = [], cr = this.crowns; wind = wind || 0;
     const from = () => { const c = cr[(r() * cr.length) | 0]; return [c.x + (r() - .5) * 1.8 * c.rx, c.y + (r() - .5) * c.ry]; };
     if (this.season === 'fall' && cr.length && P.length < 46 && r() < .42) { const q = from(); P.push({ x: q[0], y: q[1], vy: (2 + r() * 2.4) * k, ph: r() * 6.28, a: r() * 6.28, sz: (2.4 + r() * 1.8) * k, c: K[S.leaf[(r() * S.leaf.length) | 0]], land: this.gy + 4 + r() * (this.h - this.gy - 8) }); }
     if (this.season === 'spring' && cr.length && P.length < 22 && r() < .2) { const q = from(); P.push({ x: q[0], y: q[1], vy: (1.2 + r() * 1.4) * k, ph: r() * 6.28, a: r() * 6.28, sz: (1.6 + r()) * k, c: K[r() < .55 ? 'white' : 'redbud'], land: this.gy + 4 + r() * (this.h - this.gy - 8) }); }
@@ -321,7 +422,7 @@
   Drift.prototype.ops = function () {
     const out = [];
     for (const p of this.P) {
-      if (p.fly) { if (Math.sin(p.ph * 2.3) > -.25) out.push([p.x, p.y, p.x, p.y, p.sz, p.sz, K.straw, 1.3]); }
+      if (p.fly) { if (Math.sin(p.ph * 2.3) > -.25) out.push([p.x, p.y, p.x, p.y, p.sz, p.sz, this.fly, 1.3]); }
       else if (p.snow) out.push([p.x, p.y, p.x, p.y, p.sz, p.sz, p.c, 1.2]);
       else out.push([p.x - Math.cos(p.a) * p.sz, p.y - Math.sin(p.a) * p.sz * .6, p.x + Math.cos(p.a) * p.sz, p.y + Math.sin(p.a) * p.sz * .6, p.sz, p.sz * .5, p.c, 1.2]);
     }
@@ -361,17 +462,17 @@
   const flat = ops => ops.filter(q => q[6] !== CLEAR);
   function renderGif(o) {
     const w = o.w || 480, h = o.h || 300, frames = o.frames || 56, gif = new GifWriter(w, h);
-    const base = { w, h, seed: o.seed || 'grove', subject: o.subject, trees: o.trees || 3, gameDay: o.gameDay, extra: o.extra, near: o.near, nearSide: o.nearSide, far: o.far };
+    const base = { w, h, seed: o.seed || 'grove', style: o.style, subject: o.subject, trees: o.trees || 3, gameDay: o.gameDay, extra: o.extra, near: o.near, nearSide: o.nearSide, far: o.far };
     const list = o.year ? ORDER : [o.season || 'fall']; let sheet, sc;
     if (o.year) { const last = scene(Object.assign({}, base, { season: 'winter' })); sheet = new Sheet(w, h, last.bg); for (const q of last.ops) sheet.op(q); }
-    else sheet = new Sheet(w, h, K[SEASONS[list[0]].bg]);
+    else sheet = new Sheet(w, h, K[table(o.style)[list[0]].bg]);
     for (const season of list) {
       const so = Object.assign({}, base, { season }); sc = scene(so);
       const ops = o.year ? flat(wipeIn(so)).concat(sc.ops) : sc.ops, n = Math.ceil(ops.length / frames);
       if (!o.year) gif.frame(sheet.px, 40);
       for (let i = 0; i < ops.length; i += n) { for (let j = i; j < i + n && j < ops.length; j++) sheet.op(ops[j]); gif.frame(sheet.px, i + n >= ops.length ? (o.drift ? 10 : o.hold || 220) : (o.delay || 9)); }
       if (o.drift) { // let the leaves, petals or snow fall for a while over the finished drawing
-        const d = new Drift(season, w, h, sc.crowns, sc.gy, base.seed), over = Object.create(sheet);
+        const d = new Drift(season, w, h, sc.crowns, sc.gy, base.seed, o.style), over = Object.create(sheet);
         for (let f = 0; f < o.drift; f++) { for (const q of d.step(Math.sin(f / 9) * .5)) sheet.op(q); over.px = sheet.px.slice(); for (const q of d.ops()) over.op(q); gif.frame(over.px, f === o.drift - 1 ? (o.hold || 160) : 9); }
       }
     }
@@ -392,8 +493,8 @@
   // one flat canvas: a plate, a frieze, a still
   function mount(canvas, o) {
     o = o || {}; const w = canvas.width, h = canvas.height;
-    const st = { w, h, season: o.season || seasonNow(), subject: o.subject || 'grove', seed: o.seed || 'grove', trees: o.trees == null ? 4 : o.trees, gameDay: !!o.gameDay, near: o.near, nearSide: o.nearSide, far: o.far, extra: [] };
-    const sheet = new Sheet(w, h, K[SEASONS[st.season].bg]), draw = painter(canvas, sheet);
+    const st = { w, h, style: o.style || 'crayon', season: o.season || seasonNow(), subject: o.subject || 'grove', seed: o.seed || 'grove', trees: o.trees == null ? 4 : o.trees, gameDay: !!o.gameDay, near: o.near, nearSide: o.nearSide, far: o.far, extra: [] };
+    const sheet = new Sheet(w, h, K[table(st.style)[st.season].bg]), draw = painter(canvas, sheet);
     let ops = [], at = 0, t0 = 0, raf = 0; const dur = o.duration || TEMPO[o.tempo || 'brisk'];
     const tick = ts => { raf = 0; if (!t0) t0 = ts - at / ops.length * dur; const to = Math.min(ops.length, Math.ceil((ts - t0) / dur * ops.length)); for (; at < to; at++) sheet.op(ops[at]); draw(); if (at < ops.length) raf = requestAnimationFrame(tick); };
     const play = list => { if (raf) cancelAnimationFrame(raf); raf = 0; ops = list; at = 0; t0 = 0; if (still() || o.animate === false) { for (const q of ops) sheet.op(q); draw(); return; } raf = requestAnimationFrame(tick); };
@@ -410,17 +511,17 @@
   // layered: far / middle / drift / near canvases stacked in a container, with focus blur, parallax and a slow hand
   function stage(el, o) {
     o = o || {}; const w = o.w || 1200, h = o.h || 620;
-    const st = { w, h, season: o.season || seasonNow(), subject: o.subject || 'grove', seed: o.seed || 'grove', trees: o.trees == null ? 4 : o.trees, gameDay: !!o.gameDay, near: o.near, nearSide: o.nearSide, far: o.far, extra: [] };
+    const st = { w, h, style: o.style || 'crayon', season: o.season || seasonNow(), subject: o.subject || 'grove', seed: o.seed || 'grove', trees: o.trees == null ? 4 : o.trees, gameDay: !!o.gameDay, near: o.near, nearSide: o.nearSide, far: o.far, extra: [] };
     el.classList.add('us-stage'); if (!o.fill) el.style.aspectRatio = w + ' / ' + h; el.dataset.focus = o.focus || 'mid';
     const mk = cls => { const c = document.createElement('canvas'); c.width = w; c.height = h; c.className = 'us-layer ' + cls; c.setAttribute('aria-hidden', 'true'); el.appendChild(c); return c; };
     const cv = [mk('us-far'), mk('us-mid'), mk('us-near'), mk('us-drift')];
-    const sh = [new Sheet(w, h, K[SEASONS[st.season].bg])]; for (let i = 1; i < 4; i++) sh.push(new Sheet(w, h, CLEAR, sh[0].tooth));
+    const sh = [new Sheet(w, h, K[table(st.style)[st.season].bg])]; for (let i = 1; i < 4; i++) sh.push(new Sheet(w, h, CLEAR, sh[0].tooth));
     const draw = cv.map((c, i) => painter(c, sh[i])); LUT[CLEAR] = 0;
     let ops = [], marks = [], at = 0, t0 = 0, dur = TEMPO[o.tempo || 'slow'], paused = false, visible = true, raf = 0, drift = null, driftAt = 0, lastDrift = 0, wind = 0, crowns = [], gy = h * .86, litter = 0, lastLabel = null;
     const say = t => { if (t !== lastLabel) { lastLabel = t; if (o.onStep) o.onStep(t); } };
     const labelAt = i => { let l = ''; for (const m of marks) { if (m.i <= i) l = m.label; else break; } return l; };
     const runTo = to => { const dirty = [0, 0, 0]; for (; at < to; at++) { const q = ops[at]; sh[q[8]].op(q); dirty[q[8]] = 1; } for (let i = 0; i < 3; i++) if (dirty[i]) draw[i](); };
-    const startDrift = () => { if (!drift) drift = new Drift(st.season, w, h, crowns, gy, st.seed); };
+    const startDrift = () => { if (!drift) drift = new Drift(st.season, w, h, crowns, gy, st.seed, st.style); };
     const tick = ts => {
       raf = 0; if (paused || !visible) return;
       if (at < ops.length) { if (!t0) t0 = ts - at / ops.length * dur; runTo(Math.min(ops.length, Math.ceil((ts - t0) / dur * ops.length))); say(labelAt(at)); if (at >= driftAt) startDrift(); if (at >= ops.length && o.onDone) o.onDone(); }
@@ -458,7 +559,7 @@
       finish() { runTo(ops.length); say(''); startDrift(); if (o.onDone) o.onDone(); go(); return api; },
       focus(name) { el.dataset.focus = name; return api; },
       plant(fx, species) { const e = { kind: 'tree', x: fx, H: .42 + Math.random() * .3, sp: species || ['oak', 'elm', 'magnolia'][Math.floor(Math.random() * 3)], seed: 'p' + st.extra.length + '/' + Math.round(fx * 1000) }; st.extra.push(e);
-        const q = treeOps(e.seed, e.x * w, gy + 4, h * e.H, st.season, { species: e.sp }); crowns.push(q.crown); for (const k of q.ops) k[8] = 1;
+        const q = treeOps(e.seed, e.x * w, gy + 4, h * e.H, st.season, { species: e.sp, style: st.style }); crowns.push(q.crown); for (const k of q.ops) k[8] = 1;
         const rest = ops.slice(at), was = labelAt(at); ops = q.ops.concat(rest); marks = [{ i: 0, label: 'A tree you planted' }, { i: q.ops.length, label: rest.length ? was : '' }]; at = 0; t0 = 0; driftAt = 0;
         if (still()) runTo(ops.length); else go(); return api; },
       stroke(x0, y0, x1, y1, col, r) { st.extra.push({ a: x0 / w, b: y0 / h, c: x1 / w, d: y1 / h, r: r / w, col }); sh[1].op([x0, y0, x1, y1, r, r, K[col], 1.05]); draw[1](); return api; },
@@ -477,6 +578,6 @@
     let i = 0; const n = Math.ceil(ops.length / 50), tick = () => { for (let j = i; j < i + n && j < ops.length; j++) sheet.op(ops[j]); i += n; draw(); if (i < ops.length) requestAnimationFrame(tick); }; tick();
   }
 
-  const api = { colors: NAMES.reduce((m, n, i) => (m[n] = HEX[i], m), {}), seasons: SEASONS, subjects: SUBJECTS, species: SPECIES, order: ORDER, seasonNow, Sheet, scene, treeOps, building, renderGif, mount, stage, swash };
+  const api = { colors: NAMES.reduce((m, n, i) => (m[n] = HEX[i], m), {}), seasons: SEASONS, styles: STYLES, subjects: SUBJECTS, species: SPECIES, order: ORDER, seasonNow, Sheet, scene, treeOps, building, renderGif, mount, stage, swash };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.UnderstoryPaint = api;
 })(typeof window !== 'undefined' ? window : globalThis);

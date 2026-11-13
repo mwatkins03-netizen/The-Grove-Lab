@@ -671,7 +671,7 @@ h3,h4{letter-spacing:-.01em}
 .hero-ctl .seasons button{background:transparent;min-height:24px;padding:.5em .8em}
 .hero-ctl .seasons button:hover{background:rgba(244,239,227,.18)}
 .hero-ctl .seasons button[aria-pressed="true"]{background:#F4EFE3;color:#1E1B18}
-@media (max-width:600px){.hero-ctl{right:16px;left:16px}.hero-ctl .cap{display:none}}
+@media (max-width:600px){.hero-ctl{right:16px;left:16px}.hero-ctl .cap{display:none}.hero.painted .wrap{padding-bottom:84px}}
 .grove-frieze{display:block;width:100%;height:auto;background:var(--navy)}
 .frieze-wrap{line-height:0;background:var(--navy)}
 

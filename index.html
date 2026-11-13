@@ -8,10 +8,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,300..700&family=Schibsted+Grotesk:wght@400..900&family=Spline+Sans+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/grove.css?v=20261112d">
+<link rel="stylesheet" href="css/grove.css?v=20261112h">
 <link rel="icon" href="img/grove-lab-mark.svg" type="image/svg+xml">
-<script src="js/status-config.js?v=20261112d"></script>
-<script src="js/status.js?v=20261112d"></script>
+<script src="js/status-config.js?v=20261112h"></script>
+<script src="js/status.js?v=20261112h"></script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
@@ -27,7 +27,7 @@
 
 <main id="main">
   <section class="hero painted">
-    <div class="hero-art" id="heroArt" role="img" aria-label="A crayon painting of the Grove in the current season, drawn slowly, stroke by stroke."></div>
+    <div class="hero-art" id="heroArt" role="img" aria-label="A painting of the Grove in the current season, built up slowly, leaf by leaf."></div>
     <div class="hero-ctl"><span class="cap" id="heroCap"></span><span class="seasons" role="group" aria-label="Season of the Grove painting"><button type="button" data-season="spring">Spring</button><button type="button" data-season="summer">Summer</button><button type="button" data-season="fall">Fall</button><button type="button" data-season="winter">Winter</button></span><button type="button" id="heroPause" aria-pressed="false">Pause</button></div>
     <div class="wrap">
       <div class="hero-sign" data-subs-sign="big"></div>
@@ -131,7 +131,7 @@
       <div>
         <h2>AI disclosure</h2>
         <p>This site was coded with Anthropic's Claude under Marc Watkins's direction. Marc supplied the vision and the language about prototypes, timelines, sharing, and the reflection. The build form offers optional AI assistance: only if you choose it, Jev, a TypeSafe AI model, reads your idea and suggests a pathway, and its suggestions are labeled as AI-generated. Nothing else on the site uses AI.</p>
-        <p>The look of this site is Understory: its colours, marks, and drawings of the Grove are generated in code. The drawings are stylised, not traced from photographs.</p>
+        <p>The look of this site is Understory: its colours, marks, and drawings of the Grove are generated in code. The drawings are stylised, not traced from photographs. The Grove on the home page is painted leaf by leaf, an homage to the painting method of Theora Hamblett (1895–1977) of Oxford, Mississippi; no image of her work is used, and this site is not connected with her estate or the University Museum.</p>
       </div>
       <div>
         <h2>Accessibility</h2>
@@ -142,7 +142,7 @@
   </div>
 </footer>
 
-<script src="js/data.js?v=20261112d"></script>
+<script src="js/data.js?v=20261112h"></script>
 <script>
 (() => {
   const G = window.GROVE, esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -157,15 +157,16 @@
   }).join("");
 })();
 </script>
-<script src="js/understory-paint.js?v=20261112d"></script>
+<script src="js/understory-paint.js?v=20261112h"></script>
 <script>
 (function () {
   var P = window.UnderstoryPaint; if (!P) return;
   var season = P.seasonNow(), saved = null; try { saved = localStorage.getItem('grovelab.season'); } catch (e) {}
   if (P.seasons[saved]) season = saved;
+  var style = 'leaf'; // the Grove is painted leaf by leaf
   var settled = { spring: 'Petals drifting', summer: 'Fireflies out', fall: 'Leaves falling', winter: 'Snow falling' };
   var cap = document.getElementById('heroCap'), btn = document.getElementById('heroPause');
-  var hero = P.stage(document.getElementById('heroArt'), { season: season, seed: 'grove-lab', trees: 5, fill: true, nearSide: 1, onStep: function (t) { cap.textContent = t || settled[season]; } });
+  var hero = P.stage(document.getElementById('heroArt'), { w: 1500, h: 775, season: season, style: style, seed: 'grove-lab', trees: 5, fill: true, nearSide: 1, onStep: function (t) { cap.textContent = t || settled[season]; } });
   btn.addEventListener('click', function () { var p = hero.pause(); btn.setAttribute('aria-pressed', p); btn.textContent = p ? 'Play' : 'Pause'; });
   var fr = document.getElementById('groveFrieze'), frieze = null;
   var chips = document.querySelectorAll('.hero-ctl [data-season]');
@@ -174,7 +175,7 @@
     try { localStorage.setItem('grovelab.season', season); } catch (e) {}
     hero.set({ season: season }); if (frieze) frieze.set({ season: season }); }); });
   mark();
-  new IntersectionObserver(function (es, io) { es.forEach(function (e) { if (e.isIntersecting) { io.disconnect(); frieze = P.mount(fr, { season: season, seed: 'grove-lab-frieze', trees: 8, far: 12, near: false, duration: 9000 }); } }); }, { rootMargin: '100px' }).observe(fr);
+  new IntersectionObserver(function (es, io) { es.forEach(function (e) { if (e.isIntersecting) { io.disconnect(); frieze = P.mount(fr, { season: season, style: style, seed: 'grove-lab-frieze', trees: 8, far: 12, near: false, duration: 9000 }); } }); }, { rootMargin: '100px' }).observe(fr);
 })();
 </script>
 </body>
